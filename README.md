@@ -3,7 +3,9 @@
 A library for communication with solar power inverters of the RCT power brand. 
 Tested with the RCT PS 6.0 solar power inverter, battery and grid power sensor.
 
-RCT power is a registered trademark of RCT Power GmbH. This library is not provided by, endorsed by, supported by or affiliated with the company in any way.
+RCT power is a registered trademark of RCT Power GmbH. This library is not provided by, endorsed by, supported by or affiliated with the company in any way. 
+
+It is provided without any warranties, entirely for use at your own risk under a LGPL 2.1 license. 
 
 
 # Usage
