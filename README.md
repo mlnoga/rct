@@ -14,13 +14,13 @@ Install via `go get github.com/mlnoga/rct`.
 
 Use like this:
 
-```
+```go
 package main
 
 import (
-	"rct"
-        "time"
-        "fmt"
+  "rct"
+  "time"
+  "fmt"
 )
 
 func main() {
