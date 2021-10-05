@@ -26,14 +26,14 @@ func NewCache(timeout time.Duration) (cache *Cache) {
 
 // Returns cache entry for the given identifier, if still valid under timeout
 func (c *Cache) Get(i Identifier) (dg *Datagram, ok bool) {
-	entry, ok:=c.entries[i]
-	if !ok || c.timeout<time.Since(entry.ts) {
-		return &Datagram{}, false 
+	entry, ok := c.entries[i]
+	if !ok || c.timeout < time.Since(entry.ts) {
+		return &Datagram{}, false
 	}
 	return entry.dg, true
 }
 
 // Puts given datagram into the cache, for the identifier contained in the datagram
 func (c *Cache) Put(dg *Datagram) {
-	c.entries[dg.Id]=cacheEntry{dg, time.Now()}
+	c.entries[dg.Id] = cacheEntry{dg, time.Now()}
 }

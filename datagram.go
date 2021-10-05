@@ -25,8 +25,8 @@ const (
 // Helper to convert command values to a human-readable representation
 var rctCommandToString = []string{
 	"#INVALID",
-	"Read", 
-	"Write", 
+	"Read",
+	"Write",
 	"LongWrite",
 	"Reserved1",
 	"Response",
@@ -37,8 +37,12 @@ var rctCommandToString = []string{
 
 // Converts a RCT command to human-readable represenation
 func (c Command) String() string {
-	if c<=ReadPeriodically { return rctCommandToString[c] }
-	if c==Extension { return "Extension" }
+	if c <= ReadPeriodically {
+		return rctCommandToString[c]
+	}
+	if c == Extension {
+		return "Extension"
+	}
 	return rctCommandToString[0]
 }
 
@@ -49,95 +53,97 @@ type Identifier uint32
 const (
 	// power
 	//
-    SolarGenAPowerW           Identifier = 0xB5317B78  // float32
-	SolarGenBPowerW           Identifier = 0xAA9AA253  // float32
-	BatteryPowerW	          Identifier = 0x400f015b  // float32, positive = discharge, negative = charge
-    InverterACPowerW          Identifier = 0xDB2D69AE  // float32
-	RealPowerW                Identifier = 0x4E49AEC5  // float32
-	TotalGridPowerW           Identifier = 0x91617C58  // float32, positive = taken from grid, negative = feed into grid
-	BatterySoC                Identifier = 0x959930BF  // float32, range 0 ... 1
+	SolarGenAPowerW  Identifier = 0xB5317B78 // float32
+	SolarGenBPowerW  Identifier = 0xAA9AA253 // float32
+	BatteryPowerW    Identifier = 0x400f015b // float32, positive = discharge, negative = charge
+	InverterACPowerW Identifier = 0xDB2D69AE // float32
+	RealPowerW       Identifier = 0x4E49AEC5 // float32
+	TotalGridPowerW  Identifier = 0x91617C58 // float32, positive = taken from grid, negative = feed into grid
+	BatterySoC       Identifier = 0x959930BF // float32, range 0 ... 1
 
 	// voltage
 	//
-	SolarGenAVoltage          Identifier = 0xB298395D  // float32
-	SolarGenBVoltage          Identifier = 0x5BB8075A  // float32
-	BatteryVoltage            Identifier = 0xA7FA5C5D  // float32
+	SolarGenAVoltage Identifier = 0xB298395D // float32
+	SolarGenBVoltage Identifier = 0x5BB8075A // float32
+	BatteryVoltage   Identifier = 0xA7FA5C5D // float32
 
 	// energy
 	//
-	TotalEnergyWh             Identifier = 0xB1EF67CE  // float32
-	TotalEnergySolarGenAWh    Identifier = 0xFC724A9E  // float32
-	TotalEnergySolarGenBWh    Identifier = 0x68EEFD3D  // float32
-	TotalEnergyBattInWh       Identifier = 0x5570401B  // float32
-	TotalEnergyBattOutWh      Identifier = 0xA9033880  // float32
-	TotalEnergyHouseholdWh    Identifier = 0xEFF4B537  // float32
-	TotalEnergyGridWh         Identifier = 0xA59C8428  // float32
-	TotalEnergyGridFeedInWh	  Identifier = 0x44D4C533  // float32
-	TotalEnergyGridLoadWh     Identifier = 0x62FBE7DC  // float32
+	TotalEnergyWh           Identifier = 0xB1EF67CE // float32
+	TotalEnergySolarGenAWh  Identifier = 0xFC724A9E // float32
+	TotalEnergySolarGenBWh  Identifier = 0x68EEFD3D // float32
+	TotalEnergyBattInWh     Identifier = 0x5570401B // float32
+	TotalEnergyBattOutWh    Identifier = 0xA9033880 // float32
+	TotalEnergyHouseholdWh  Identifier = 0xEFF4B537 // float32
+	TotalEnergyGridWh       Identifier = 0xA59C8428 // float32
+	TotalEnergyGridFeedInWh Identifier = 0x44D4C533 // float32
+	TotalEnergyGridLoadWh   Identifier = 0x62FBE7DC // float32
 
 	// other
 	//
-	InverterState             Identifier = 0x5F33284E  // uint8
-	BatteryCapacityAh         Identifier = 0xB57B59BD  // float32
-	BatteryTemperatureC       Identifier = 0x902AFAFB  // float32
-	BatterySoCTarget          Identifier = 0x8B9FF008  // float32 0 ... 1
-	BatterySoCTargetHigh      Identifier = 0xB84A38AB  // float32 0 ... 1
-	BatterySoCTargetMin       Identifier = 0xCE266F0F  // float32 0 ... 1
-	BatterySoCTargetMinIsland Identifier = 0x8EBF9574  // float32 0 ... 1
+	InverterState             Identifier = 0x5F33284E // uint8
+	BatteryCapacityAh         Identifier = 0xB57B59BD // float32
+	BatteryTemperatureC       Identifier = 0x902AFAFB // float32
+	BatterySoCTarget          Identifier = 0x8B9FF008 // float32 0 ... 1
+	BatterySoCTargetHigh      Identifier = 0xB84A38AB // float32 0 ... 1
+	BatterySoCTargetMin       Identifier = 0xCE266F0F // float32 0 ... 1
+	BatterySoCTargetMinIsland Identifier = 0x8EBF9574 // float32 0 ... 1
 )
 
 // Table to convert identifier values to human-readable strings
-var identifiersToString = map[Identifier]string {
+var identifiersToString = map[Identifier]string{
 	// power
 	//
-    SolarGenAPowerW	          : "Solar generator A power [W]",
-	SolarGenBPowerW	          : "Solar generator B power [W]",
-	BatteryPowerW             : "Battery power [W]",
-    InverterACPowerW          : "Inverter AC power [W]",
-	RealPowerW                : "Real power [W]",
-	TotalGridPowerW           : "Total grid power [W]",
-	BatterySoC                : "Battery state of charge",
+	SolarGenAPowerW:  "Solar generator A power [W]",
+	SolarGenBPowerW:  "Solar generator B power [W]",
+	BatteryPowerW:    "Battery power [W]",
+	InverterACPowerW: "Inverter AC power [W]",
+	RealPowerW:       "Real power [W]",
+	TotalGridPowerW:  "Total grid power [W]",
+	BatterySoC:       "Battery state of charge",
 
 	// voltage
 	//
-	SolarGenAVoltage          : "Solar generator A voltage [V]",
-	SolarGenBVoltage          : "Solar generator B voltage [V]",
-	BatteryVoltage            : "Battery voltage [V]",
+	SolarGenAVoltage: "Solar generator A voltage [V]",
+	SolarGenBVoltage: "Solar generator B voltage [V]",
+	BatteryVoltage:   "Battery voltage [V]",
 
 	// energy
 	//
-	TotalEnergyWh             : "Total energy [Wh]",
-	TotalEnergySolarGenAWh    : "Total energy solarGenA [Wh]",
-	TotalEnergySolarGenBWh    : "Total energy solarGenB [Wh]",
-	TotalEnergyBattInWh       : "Total energy batt in [Wh]",
-	TotalEnergyBattOutWh      : "Total energy batt out [Wh]",
-	TotalEnergyHouseholdWh    : "Total energy household [Wh]",
-	TotalEnergyGridWh         : "Total energy grid [Wh]",
-	TotalEnergyGridFeedInWh	  : "Total energy grid feed in [Wh]",
-	TotalEnergyGridLoadWh     : "Total energy grid load [Wh]",
+	TotalEnergyWh:           "Total energy [Wh]",
+	TotalEnergySolarGenAWh:  "Total energy solarGenA [Wh]",
+	TotalEnergySolarGenBWh:  "Total energy solarGenB [Wh]",
+	TotalEnergyBattInWh:     "Total energy batt in [Wh]",
+	TotalEnergyBattOutWh:    "Total energy batt out [Wh]",
+	TotalEnergyHouseholdWh:  "Total energy household [Wh]",
+	TotalEnergyGridWh:       "Total energy grid [Wh]",
+	TotalEnergyGridFeedInWh: "Total energy grid feed in [Wh]",
+	TotalEnergyGridLoadWh:   "Total energy grid load [Wh]",
 
 	// other
 	//
-	InverterState             : "Inverter state", 
-	BatteryCapacityAh         : "Battery capacity [Ah]", 
-	BatteryTemperatureC       : "Battery temperature [°C]", 
-	BatterySoCTarget          : "Battery SoC target", 
-	BatterySoCTargetHigh      : "Battery SoC target high", 
-	BatterySoCTargetMin       : "Battery SoC target min", 
-	BatterySoCTargetMinIsland : "Battery SoC target min island", 
+	InverterState:             "Inverter state",
+	BatteryCapacityAh:         "Battery capacity [Ah]",
+	BatteryTemperatureC:       "Battery temperature [°C]",
+	BatterySoCTarget:          "Battery SoC target",
+	BatterySoCTargetHigh:      "Battery SoC target high",
+	BatterySoCTargetMin:       "Battery SoC target min",
+	BatterySoCTargetMinIsland: "Battery SoC target min island",
 }
 
 // Converts an identifier to a human-readable representation
 func (i Identifier) String() string {
-	s,ok:=identifiersToString[i]
-	if !ok { return "#INVALID" }
+	s, ok := identifiersToString[i]
+	if !ok {
+		return "#INVALID"
+	}
 	return s
 }
 
-// Inverter state type for InverterState responses from the RCT 
+// Inverter state type for InverterState responses from the RCT
 type InverterStates uint8
 
-// Inverter state values for InverterState responses from the RCT 
+// Inverter state values for InverterState responses from the RCT
 const (
 	StateStandby InverterStates = iota
 	StateInitialization
@@ -156,29 +162,30 @@ const (
 )
 
 // Table to convert an inverter state value to a human-readable string
-var inverterStateToString []string=[]string{
-	"Standby", 
-	"Initialization", 
-	"Standby2", 
-	"Efficiency", 
-	"Insulation check", 
-	"Island check", 
-	"Power check", 
-	"Symmetry", 
-	"Relay test", 
-	"Grid passive", 
-	"Prepare battery passive", 
-	"Battery passive", 
-	"Hardware check", 
-	"Feed in", 
+var inverterStateToString []string = []string{
+	"Standby",
+	"Initialization",
+	"Standby2",
+	"Efficiency",
+	"Insulation check",
+	"Island check",
+	"Power check",
+	"Symmetry",
+	"Relay test",
+	"Grid passive",
+	"Prepare battery passive",
+	"Battery passive",
+	"Hardware check",
+	"Feed in",
 }
 
 // Converts an inverter state value to a human-readable string
 func (i InverterStates) String() string {
-	if i>StateFeedIn { return "#INVALID" }
+	if i > StateFeedIn {
+		return "#INVALID"
+	}
 	return inverterStateToString[i]
 }
-
 
 // A RCT datagram
 type Datagram struct {
@@ -194,30 +201,36 @@ func (d *Datagram) String() string {
 
 // Returns datagram body value as a float32
 func (d *Datagram) Float32() (val float32, err error) {
-	if len(d.Data)!=4 { return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data))) }
+	if len(d.Data) != 4 {
+		return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data)))
+	}
 
-	bits:=uint32(d.Data[0])<<24
-	bits|=uint32(d.Data[1])<<16
-	bits|=uint32(d.Data[2])<<8
-	bits|=uint32(d.Data[3])
-	val=math.Float32frombits(bits)
+	bits := uint32(d.Data[0]) << 24
+	bits |= uint32(d.Data[1]) << 16
+	bits |= uint32(d.Data[2]) << 8
+	bits |= uint32(d.Data[3])
+	val = math.Float32frombits(bits)
 
 	return val, nil
 }
 
 // Returns datagram body value as a uint16
 func (d *Datagram) Uint16() (val uint16, err error) {
-	if len(d.Data)!=2 { return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data))) }
+	if len(d.Data) != 2 {
+		return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data)))
+	}
 
-	val=uint16(d.Data[0])<<8
-	val|=uint16(d.Data[1])
+	val = uint16(d.Data[0]) << 8
+	val |= uint16(d.Data[1])
 
 	return val, nil
 }
 
 // Returns datagram body value as a uint8
 func (d *Datagram) Uint8() (val uint8, err error) {
-	if len(d.Data)!=1 { return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data))) }
+	if len(d.Data) != 1 {
+		return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data)))
+	}
 
 	return uint8(d.Data[0]), nil
 }
