@@ -77,7 +77,6 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 			if b == 0x2B {
 				state = AwaitingCmd
 			}
-			break
 
 		case AwaitingCmd:
 			crc.Reset()
@@ -88,32 +87,27 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 			} else {
 				state = AwaitingStart
 			}
-			break
 
 		case AwaitingLen:
 			crc.Update(b)
 			length = uint8(b)
 			dataLength = length - 4
 			state = AwaitingId0
-			break
 
 		case AwaitingId0:
 			crc.Update(b)
 			dg.Id = Identifier(uint32(b) << 24)
 			state = AwaitingId1
-			break
 
 		case AwaitingId1:
 			crc.Update(b)
 			dg.Id |= Identifier(uint32(b) << 16)
 			state = AwaitingId2
-			break
 
 		case AwaitingId2:
 			crc.Update(b)
 			dg.Id |= Identifier(uint32(b) << 8)
 			state = AwaitingId3
-			break
 
 		case AwaitingId3:
 			crc.Update(b)
@@ -125,7 +119,6 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 				dg.Data = nil
 				state = AwaitingCrc0
 			}
-			break
 
 		case AwaitingData:
 			crc.Update(b)
@@ -133,12 +126,10 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 			if len(dg.Data) >= int(dataLength) {
 				state = AwaitingCrc0
 			}
-			break
 
 		case AwaitingCrc0:
 			crcReceived = uint16(b) << 8
 			state = AwaitingCrc1
-			break
 
 		case AwaitingCrc1:
 			crcReceived |= uint16(b)

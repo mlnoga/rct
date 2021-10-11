@@ -78,5 +78,5 @@ func (r *DatagramBuilder) String() string {
 		fmt.Fprintf(&buf, "%02X", b)
 	}
 	buf.WriteByte(byte(']'))
-	return string(buf.Bytes())
+	return buf.String()
 }

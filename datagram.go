@@ -1,7 +1,6 @@
 package rct
 
 import (
-	"errors"
 	"fmt"
 	"math"
 )
@@ -202,7 +201,7 @@ func (d *Datagram) String() string {
 // Returns datagram body value as a float32
 func (d *Datagram) Float32() (val float32, err error) {
 	if len(d.Data) != 4 {
-		return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data)))
+		return 0, fmt.Errorf("Invalid data length %d", len(d.Data))
 	}
 
 	bits := uint32(d.Data[0]) << 24
@@ -217,7 +216,7 @@ func (d *Datagram) Float32() (val float32, err error) {
 // Returns datagram body value as a uint16
 func (d *Datagram) Uint16() (val uint16, err error) {
 	if len(d.Data) != 2 {
-		return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data)))
+		return 0, fmt.Errorf("Invalid data length %d", len(d.Data))
 	}
 
 	val = uint16(d.Data[0]) << 8
@@ -229,7 +228,7 @@ func (d *Datagram) Uint16() (val uint16, err error) {
 // Returns datagram body value as a uint8
 func (d *Datagram) Uint8() (val uint8, err error) {
 	if len(d.Data) != 1 {
-		return 0, errors.New(fmt.Sprintf("Invalid data length %d", len(d.Data)))
+		return 0, fmt.Errorf("Invalid data length %d", len(d.Data))
 	}
 
 	return uint8(d.Data[0]), nil
