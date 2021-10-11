@@ -44,8 +44,8 @@ func main() {
 # Architecture
 
 * `datagram.go` defines basic constants like commands, on-device identifiers and datagram packets; as well as conversions of datagram payloads to golang types
+* `crc.go` defines the cyclic redundancy check algorithm to ensure data integrity used by the RCT
 * `build.go` defines a datagram builder for assembling datagrams to send
 * `parse.go` defines a datagram parser which parses incoming bytes into datagrams
 * `connection.go` ties builders and parsers into a bidirectional connection with the device, and defines convenience methods to synchronously query identifiers
-
 
