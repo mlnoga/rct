@@ -1,0 +1,21 @@
+name: Push to repo
+on: [push]
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2 
+      - name: install golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16'
+      - name: build
+        run:  go build
+      - name: test
+        run:  go test
+      - name: lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          skip-go-installation: true
