@@ -8,13 +8,13 @@ type builderTestCase struct {
 }
 
 var builderTestCases = []builderTestCase{
-	{Datagram{Read, BatteryPower, nil}, "[2B 01 04 40 0F 01 5B 58 B4]"},
-	{Datagram{Read, InverterACPower, nil}, "[2B 01 04 DB 2D 2D 69 AE 55 AB]"},
+	{Datagram{Read, BatteryPowerW, nil}, "[2B 01 04 40 0F 01 5B 58 B4]"},
+	{Datagram{Read, InverterACPowerW, nil}, "[2B 01 04 DB 2D 2D 69 AE 55 AB]"},
 }
 
 // Test if builder returns expected byte representation
 func TestBuilder(t *testing.T) {
-	builder := DatagramBuilder{}
+	builder := NewDatagramBuilder()
 	for _, tc := range builderTestCases {
 		builder.Build(&tc.Dg)
 		res := builder.String()
@@ -26,15 +26,14 @@ func TestBuilder(t *testing.T) {
 
 // Test if roundtrip from builder to parser returns the same datagram
 func TestBuilderParser(t *testing.T) {
-	builder := DatagramBuilder{}
-	parser := DatagramParser{}
-	parser.Init()
+	builder := NewDatagramBuilder()
+	parser := NewDatagramParser()
 
 	for _, tc := range builderTestCases {
 		builder.Build(&tc.Dg)
 		parser.Reset()
-		parser.Buffer = builder.Bytes()
-		parser.Len = len(builder.Bytes())
+		parser.buffer = builder.Bytes()
+		parser.length = len(builder.Bytes())
 		dg, err := parser.Parse()
 		if err != nil {
 			t.Errorf(err.Error())
