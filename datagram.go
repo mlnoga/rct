@@ -196,7 +196,7 @@ type Datagram struct {
 
 // Prints a RCT datagram in a human-readable representation
 func (d *Datagram) String() string {
-	return fmt.Sprintf("Cmd %s (%02X) Id %08X Data %v", d.Cmd.String(), uint8(d.Cmd), d.Id, d.Data)
+	return fmt.Sprintf("Cmd %s (%02X) Id %s (%08X) Data %v", d.Cmd.String(), uint8(d.Cmd), d.Id.String(), uint32(d.Id), d.Data)
 }
 
 // Returns datagram body value as a float32
