@@ -1,6 +1,7 @@
 package rct
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math"
 )
@@ -201,34 +202,25 @@ func (d *Datagram) String() string {
 // Returns datagram body value as a float32
 func (d *Datagram) Float32() (val float32, err error) {
 	if len(d.Data) != 4 {
-		return 0, fmt.Errorf("Invalid data length %d", len(d.Data))
+		return 0, fmt.Errorf("invalid data length %d", len(d.Data))
 	}
 
-	bits := uint32(d.Data[0]) << 24
-	bits |= uint32(d.Data[1]) << 16
-	bits |= uint32(d.Data[2]) << 8
-	bits |= uint32(d.Data[3])
-	val = math.Float32frombits(bits)
-
-	return val, nil
+	return math.Float32frombits(binary.BigEndian.Uint32(d.Data)), nil
 }
 
 // Returns datagram body value as a uint16
 func (d *Datagram) Uint16() (val uint16, err error) {
 	if len(d.Data) != 2 {
-		return 0, fmt.Errorf("Invalid data length %d", len(d.Data))
+		return 0, fmt.Errorf("invalid data length %d", len(d.Data))
 	}
 
-	val = uint16(d.Data[0]) << 8
-	val |= uint16(d.Data[1])
-
-	return val, nil
+	return binary.BigEndian.Uint16(d.Data), nil
 }
 
 // Returns datagram body value as a uint8
 func (d *Datagram) Uint8() (val uint8, err error) {
 	if len(d.Data) != 1 {
-		return 0, fmt.Errorf("Invalid data length %d", len(d.Data))
+		return 0, fmt.Errorf("invalid data length %d", len(d.Data))
 	}
 
 	return uint8(d.Data[0]), nil

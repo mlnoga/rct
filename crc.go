@@ -24,8 +24,8 @@ func (c *CRC) Reset() {
 func (c *CRC) Update(b byte) {
 	crc := c.crc
 	for i := 0; i < 8; i++ {
-		bit := ((b >> (7 - i) & 1) == 1)
-		c15 := (((crc >> 15) & 1) == 1)
+		bit := (b >> (7 - i) & 1) == 1
+		c15 := ((crc >> 15) & 1) == 1
 		crc <<= 1
 		if c15 != bit {
 			crc ^= 0x1021
