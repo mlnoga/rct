@@ -20,7 +20,7 @@ type Connection struct {
 var connectionCache map[string]*Connection = make(map[string]*Connection)
 
 // Creates a new connection to a RCT device at the given address
-func NewConnection(host string, timeout time.Duration) (conn *Connection, err error) {
+func NewConnection(host string, timeout, cache time.Duration) (conn *Connection, err error) {
 	if conn, ok := connectionCache[host]; ok {
 		return conn, nil
 	}
@@ -30,7 +30,7 @@ func NewConnection(host string, timeout time.Duration) (conn *Connection, err er
 		timeout: timeout,
 		builder: NewDatagramBuilder(),
 		parser:  NewDatagramParser(),
-		cache:   NewCache(timeout),
+		cache:   NewCache(cache),
 	}
 	err = conn.connect()
 	if err != nil {
