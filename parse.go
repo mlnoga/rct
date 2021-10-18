@@ -135,7 +135,7 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 			crcReceived |= uint16(b)
 			crcCalculated := crc.Get()
 			if crcCalculated != crcReceived {
-				fmt.Printf("[CRC error calc %04x want %04x]", crcCalculated, crcReceived)
+				// fmt.Printf("[CRC error calc %04x want %04x]", crcCalculated, crcReceived)
 				state = AwaitingStart // CRCError
 			} else {
 				state = Done
@@ -148,7 +148,7 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 	//fmt.Printf("(%v)\n", state)
 
 	if state != Done {
-		return dg, fmt.Errorf("Parse error: state %d", state)
+		return dg, fmt.Errorf("parsing failed in state %d", state)
 	}
 	return dg, nil
 }
