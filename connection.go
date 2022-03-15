@@ -6,10 +6,12 @@ import (
 	"time"
 )
 
+// DialTimeout is the default cache for connecting to a RCT device
+var DialTimeout = time.Second * 5
+
 // Connection to a RCT device
 type Connection struct {
 	host    string
-	timeout time.Duration
 	conn    net.Conn
 	builder *DatagramBuilder
 	parser  *DatagramParser
@@ -20,20 +22,19 @@ type Connection struct {
 var connectionCache map[string]*Connection = make(map[string]*Connection)
 
 // Creates a new connection to a RCT device at the given address
-func NewConnection(host string, timeout, cache time.Duration) (conn *Connection, err error) {
+func NewConnection(host string, cache time.Duration) (*Connection, error) {
 	if conn, ok := connectionCache[host]; ok {
 		return conn, nil
 	}
 
-	conn = &Connection{
+	conn := &Connection{
 		host:    host,
-		timeout: timeout,
 		builder: NewDatagramBuilder(),
 		parser:  NewDatagramParser(),
 		cache:   NewCache(cache),
 	}
-	err = conn.connect()
-	if err != nil {
+
+	if err := conn.connect(); err != nil {
 		return nil, err
 	}
 
@@ -44,7 +45,7 @@ func NewConnection(host string, timeout, cache time.Duration) (conn *Connection,
 // Connects an uninitialized RCT connection to the device at the given address
 func (c *Connection) connect() (err error) {
 	address := c.host + ":8899" // default port for RCT
-	c.conn, err = net.Dial("tcp", address)
+	c.conn, err = net.DialTimeout("tcp", address, DialTimeout)
 	return err
 }
 
@@ -63,7 +64,6 @@ func (c *Connection) Send(rdb *DatagramBuilder) (n int, err error) {
 	if err != nil {
 		// fmt.Printf("Read %d bytes error %v\n", n, err)
 		c.conn.Close()
-		time.Sleep(c.timeout)
 		err = c.connect()
 		// fmt.Printf("Error reconnecting: %v\n", err)
 		if err != nil {
