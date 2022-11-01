@@ -44,7 +44,7 @@ func NewConnection(host string, cache time.Duration) (*Connection, error) {
 
 // Connects an uninitialized RCT connection to the device at the given address
 func (c *Connection) connect() (err error) {
-	address := c.host + ":8899" // default port for RCT
+	address := net.JoinHostPort(c.host, "8899") // default port for RCT
 	c.conn, err = net.DialTimeout("tcp", address, DialTimeout)
 	return err
 }
