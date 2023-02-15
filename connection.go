@@ -44,7 +44,7 @@ func NewConnection(host string, cache time.Duration) (*Connection, error) {
 
 // Connects an uninitialized RCT connection to the device at the given address
 func (c *Connection) connect() (err error) {
-	address := c.host + ":8899" // default port for RCT
+	address := net.JoinHostPort(c.host, "8899") // default port for RCT
 	c.conn, err = net.DialTimeout("tcp", address, DialTimeout)
 	return err
 }
@@ -57,6 +57,13 @@ func (c *Connection) Close() {
 
 // Sends the given RCT datagram via the connection
 func (c *Connection) Send(rdb *DatagramBuilder) (n int, err error) {
+	// ensure active connection
+	if c.conn == nil {
+		if err := c.connect(); err != nil {
+			return 0, err
+		}
+	}
+
 	// fmt.Printf("Sending %v\n", c.Builder.String())
 	n, err = c.conn.Write(rdb.Bytes())
 
@@ -64,9 +71,8 @@ func (c *Connection) Send(rdb *DatagramBuilder) (n int, err error) {
 	if err != nil {
 		// fmt.Printf("Read %d bytes error %v\n", n, err)
 		c.conn.Close()
-		err = c.connect()
 		// fmt.Printf("Error reconnecting: %v\n", err)
-		if err != nil {
+		if err := c.connect(); err != nil {
 			return 0, err
 		}
 		n, err = c.conn.Write(rdb.Bytes())
@@ -77,6 +83,13 @@ func (c *Connection) Send(rdb *DatagramBuilder) (n int, err error) {
 
 // Receives an RCT response via the connection
 func (c *Connection) Receive() (dg *Datagram, err error) {
+	// ensure active connection
+	if c.conn == nil {
+		if err := c.connect(); err != nil {
+			return nil, err
+		}
+	}
+
 	c.parser.Reset()
 	c.parser.length, err = c.conn.Read(c.parser.buffer)
 	if err != nil {
@@ -107,7 +120,7 @@ func (c *Connection) Query(id Identifier) (dg *Datagram, err error) {
 		return nil, err
 	}
 	if dg.Cmd != Response || dg.Id != id {
-		return nil, fmt.Errorf("Invalid response %v", dg)
+		return nil, fmt.Errorf("invalid response: %v", dg)
 	}
 	c.cache.Put(dg)
 
