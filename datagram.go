@@ -49,7 +49,7 @@ func (c Command) String() string {
 // Identifier type for variables on the RCT device
 type Identifier uint32
 
-// Identifier values for variables on the RCT device
+// Identifier values for variables on the RCT device, see https://rctclient.readthedocs.io/en/latest/inverter_registry.html
 const (
 	// power
 	//
@@ -60,6 +60,7 @@ const (
 	RealPowerW       Identifier = 0x4E49AEC5 // float32
 	TotalGridPowerW  Identifier = 0x91617C58 // float32, positive = taken from grid, negative = feed into grid
 	BatterySoC       Identifier = 0x959930BF // float32, range 0 ... 1
+	S0ExternalPowerW Identifier = 0xE96F1844 // float32
 
 	// voltage
 	//
