@@ -120,7 +120,7 @@ func (c *Connection) Query(id Identifier) (dg *Datagram, err error) {
 		return nil, err
 	}
 	if dg.Cmd != Response || dg.Id != id {
-		return nil, fmt.Errorf("invalid response: %v", dg)
+		return nil, RecoverableError{fmt.Sprintf("invalid response to read of %08X: %v", id, dg)}
 	}
 	c.cache.Put(dg)
 

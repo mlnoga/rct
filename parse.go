@@ -148,7 +148,7 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 	//fmt.Printf("(%v)\n", state)
 
 	if state != Done {
-		return dg, fmt.Errorf("parsing failed in state %d", state)
+		return dg, RecoverableError{fmt.Sprintf("parsing failed in state %d", state)}
 	}
 	return dg, nil
 }
