@@ -24,7 +24,9 @@ var connectionCache map[string]*Connection = make(map[string]*Connection)
 // Creates a new connection to a RCT device at the given address
 func NewConnection(host string, cache time.Duration) (*Connection, error) {
 	if conn, ok := connectionCache[host]; ok {
-		return conn, nil
+		if conn.conn != nil { // there might be dead connection in the cache, e.g. when connection was disconnected
+			return conn, nil
+		}
 	}
 
 	conn := &Connection{
@@ -53,6 +55,7 @@ func (c *Connection) connect() (err error) {
 func (c *Connection) Close() {
 	c.conn.Close()
 	c.conn = nil
+	delete(connectionCache, c.host) // connection is dead, no need to cache any more
 }
 
 // Sends the given RCT datagram via the connection
