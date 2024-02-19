@@ -104,28 +104,49 @@ func (c *Connection) Receive() (dg *Datagram, err error) {
 	// return dg, err
 }
 
-// Queries the given identifier on the RCT device, returning its value as a datagram
-func (c *Connection) Query(id Identifier) (dg *Datagram, err error) {
-	if dg, ok := c.cache.Get(id); ok {
-		return dg, nil
-	}
-	c.builder.Build(&Datagram{Read, id, nil})
-	_, err = c.Send(c.builder)
-	if err != nil {
-		return nil, err
-	}
+// Queries the given identifier on the RCT device with retry, returning its value as a datagram
+func (c *Connection) Query(id Identifier) (*Datagram, error) {
+    if dg, ok := c.cache.Get(id); ok {
+        return dg, nil
+    }
 
-	dg, err = c.Receive()
-	if err != nil {
-		return nil, err
-	}
-	if dg.Cmd != Response || dg.Id != id {
-		return nil, RecoverableError{fmt.Sprintf("invalid response to read of %08X: %v", id, dg)}
-	}
-	c.cache.Put(dg)
+    const maxRetries = 10
+    const startDelay = 100 * time.Millisecond
+    const backoffMultiplier = 2
+    var delay = startDelay
 
-	return dg, nil
+    for attempt := 0; attempt < maxRetries; attempt++ {
+        c.builder.Build(&Datagram{Cmd: Read, Id: id, Data: nil})
+        _, err := c.Send(c.builder)
+        if err != nil {
+            return nil, err
+        }
+
+        dg, err := c.Receive()
+        if err != nil {
+            if _, ok := err.(RecoverableError); ok {
+                fmt.Printf("Recoverable error during parsing, attempt %d of %d: %v\n", attempt+1, maxRetries, err)
+                time.Sleep(delay)
+                delay *= time.Duration(backoffMultiplier)
+                continue
+            }
+            return nil, err
+        }
+
+        if dg.Cmd == Response && dg.Id == id {
+            c.cache.Put(dg)
+            return dg, nil
+        }
+
+        err = RecoverableError{fmt.Sprintf("Mismatch of requested read of id: %v and response from source: %v", id, dg)}
+        fmt.Println(err.Error())
+        time.Sleep(delay)
+        delay *= time.Duration(backoffMultiplier)
+    }
+
+    return nil, errors.New(fmt.Sprintf("Max retries reached for id: %v", id))
 }
+
 
 // Queries the given identifier on the RCT device, returning its value as a float32
 func (c *Connection) QueryFloat32(id Identifier) (val float32, err error) {
