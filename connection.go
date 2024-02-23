@@ -1,6 +1,7 @@
 package rct
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"time"
