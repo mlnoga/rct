@@ -1,7 +1,6 @@
 package rct
 
 import (
-	"fmt"
 	"net"
 	"time"
 )
@@ -109,22 +108,33 @@ func (c *Connection) Query(id Identifier) (dg *Datagram, err error) {
 	if dg, ok := c.cache.Get(id); ok {
 		return dg, nil
 	}
-	c.builder.Build(&Datagram{Read, id, nil})
-	_, err = c.Send(c.builder)
-	if err != nil {
-		return nil, err
+
+	const maxRetries = 10                     // Define maximum number of retry attempts.
+	const startDelay = 100 * time.Millisecond // Initial delay before retries.
+	const backoffMultiplier = 2               // Multiplier to increase delay between retries.
+	var delay = startDelay                    // Current delay, starting with startDelay.
+
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		c.builder.Build(&Datagram{Read, id, nil})
+		_, err = c.Send(c.builder)
+		if err != nil {
+			return nil, err
+		}
+
+		dg, err = c.Receive()
+		if err == nil && dg.Cmd == Response && dg.Id == id {
+			c.cache.Put(dg) // Cache and return on success, unchanged from original.
+			return dg, nil
+		} else {
+			// Loop on recoverable error or if response doesn't match request.
+			time.Sleep(delay)                         // Wait before retrying.
+			delay *= time.Duration(backoffMultiplier) // Increase delay for next attempt.
+			continue                                  // Continue to next attempt.
+		}
 	}
 
-	dg, err = c.Receive()
-	if err != nil {
-		return nil, err
-	}
-	if dg.Cmd != Response || dg.Id != id {
-		return nil, RecoverableError{fmt.Sprintf("invalid response to read of %08X: %v", id, dg)}
-	}
-	c.cache.Put(dg)
-
-	return dg, nil
+	// Return the last occurred error after all attempts, if not successful.
+	return nil, err
 }
 
 // Queries the given identifier on the RCT device, returning its value as a float32
