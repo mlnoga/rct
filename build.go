@@ -14,8 +14,7 @@ type DatagramBuilder struct {
 // Returns a new DatagramBuilder
 func NewDatagramBuilder() (b *DatagramBuilder) {
 	return &DatagramBuilder{
-		buffer: bytes.Buffer{},
-		crc:    NewCRC(),
+		crc: NewCRC(),
 	}
 }
 
@@ -69,7 +68,7 @@ func (r *DatagramBuilder) Bytes() []byte {
 
 // Converts the datagram into a string representation for printing
 func (r *DatagramBuilder) String() string {
-	buf := bytes.Buffer{}
+	var buf bytes.Buffer
 	buf.WriteByte(byte('['))
 	for i, b := range r.buffer.Bytes() {
 		if i != 0 {
