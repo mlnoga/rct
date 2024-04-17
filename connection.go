@@ -59,13 +59,13 @@ func (c *Connection) Close() {
 }
 
 // Sends the given RCT datagram via the connection
-func (c *Connection) Send(rdb *DatagramBuilder) (n int, err error) {
+func (c *Connection) Send(rdb *DatagramBuilder) (int, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.send(rdb)
 }
 
-func (c *Connection) send(rdb *DatagramBuilder) (n int, err error) {
+func (c *Connection) send(rdb *DatagramBuilder) (int, error) {
 	// ensure active connection
 	if c.conn == nil {
 		if err := c.connect(); err != nil {
@@ -74,7 +74,7 @@ func (c *Connection) send(rdb *DatagramBuilder) (n int, err error) {
 	}
 
 	// fmt.Printf("Sending %v\n", c.Builder.String())
-	n, err = c.conn.Write(rdb.Bytes())
+	n, err := c.conn.Write(rdb.Bytes())
 	// single retry on error when sending
 	if err != nil {
 		// fmt.Printf("Read %d bytes error %v\n", n, err)
@@ -116,7 +116,7 @@ func (c *Connection) Receive() (dg *Datagram, err error) {
 }
 
 // Queries the given identifier on the RCT device, returning its value as a datagram
-func (c *Connection) Query(id Identifier) (dg *Datagram, err error) {
+func (c *Connection) Query(id Identifier) (*Datagram, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -126,12 +126,11 @@ func (c *Connection) Query(id Identifier) (dg *Datagram, err error) {
 
 	builder := NewDatagramBuilder()
 	builder.Build(&Datagram{Read, id, nil})
-	_, err = c.send(builder)
-	if err != nil {
+	if _, err := c.send(builder); err != nil {
 		return nil, err
 	}
 
-	dg, err = c.Receive()
+	dg, err := c.Receive()
 	if err != nil {
 		return nil, err
 	}
