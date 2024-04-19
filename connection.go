@@ -90,10 +90,14 @@ func (c *Connection) send(rdb *DatagramBuilder) (int, error) {
 }
 
 // Receives an RCT response via the connection
-func (c *Connection) Receive() (dg *Datagram, err error) {
+func (c *Connection) Receive() (*Datagram, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+	return c.receive()
+}
 
+// Receives an RCT response via the connection
+func (c *Connection) receive() (dg *Datagram, err error) {
 	// ensure active connection
 	if c.conn == nil {
 		if err := c.connect(); err != nil {
@@ -130,7 +134,7 @@ func (c *Connection) Query(id Identifier) (*Datagram, error) {
 		return nil, err
 	}
 
-	dg, err := c.Receive()
+	dg, err := c.receive()
 	if err != nil {
 		return nil, err
 	}
