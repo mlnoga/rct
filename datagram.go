@@ -52,7 +52,7 @@ const (
 	SOCTargetConstant      uint8 = 0x01
 	SOCTargetExternal      uint8 = 0x02
 	SOCTargetMiddleVoltage uint8 = 0x03
-	SOCTargetInternal      uint8 = 0x04
+	SOCTargetInternal      uint8 = 0x04 // default
 	SOCTargetSchedule      uint8 = 0x05
 )
 
@@ -63,15 +63,14 @@ type Identifier uint32
 const (
 	// power
 	//
-	SolarGenAPowerW             Identifier = 0xB5317B78 // float32
-	SolarGenBPowerW             Identifier = 0xAA9AA253 // float32
-	BatteryPowerW               Identifier = 0x400f015b // float32, positive = discharge, negative = charge
-	InverterACPowerW            Identifier = 0xDB2D69AE // float32
-	RealPowerW                  Identifier = 0x4E49AEC5 // float32
-	TotalGridPowerW             Identifier = 0x91617C58 // float32, positive = taken from grid, negative = feed into grid
-	BatterySoC                  Identifier = 0x959930BF // float32, range 0 ... 1
-	S0ExternalPowerW            Identifier = 0xE96F1844 // float32
-	PowerMngBatteryPowerExternW Identifier = 0xBD008E29 // FLOAT: Battery target power
+	SolarGenAPowerW  Identifier = 0xB5317B78 // float32
+	SolarGenBPowerW  Identifier = 0xAA9AA253 // float32
+	BatteryPowerW    Identifier = 0x400f015b // float32, positive = discharge, negative = charge
+	InverterACPowerW Identifier = 0xDB2D69AE // float32
+	RealPowerW       Identifier = 0x4E49AEC5 // float32
+	TotalGridPowerW  Identifier = 0x91617C58 // float32, positive = taken from grid, negative = feed into grid
+	BatterySoC       Identifier = 0x959930BF // float32, range 0 ... 1
+	S0ExternalPowerW Identifier = 0xE96F1844 // float32
 
 	// voltage
 	//
@@ -91,6 +90,18 @@ const (
 	TotalEnergyGridFeedInWh Identifier = 0x44D4C533 // float32
 	TotalEnergyGridLoadWh   Identifier = 0x62FBE7DC // float32
 
+	// write
+	//
+	PowerMngSocStrategy         Identifier = 0xF168B748 // ENUM: SOC target selection
+	PowerMngSocTargetSet        Identifier = 0xD1DFC969 // float32
+	PowerMngBatteryPowerExternW Identifier = 0xBD008E29 // float32
+	PowerMngSocMin              Identifier = 0xCE266F0F // float32
+	PowerMngSocMax              Identifier = 0x97997C93 // float32
+	PowerMngSocChargePowerW     Identifier = 0x1D2994EA // float32
+	PowerMngSocCharge           Identifier = 0xBD3A23C3 // float32
+	PowerMngGridPowerLimitW     Identifier = 0x54829753 // float32
+	PowerMngUseGridPowerEnable  Identifier = 0x36A9E9A6 // bool
+
 	// other
 	//
 	InverterState             Identifier = 0x5F33284E // uint8
@@ -100,7 +111,6 @@ const (
 	BatterySoCTargetHigh      Identifier = 0xB84A38AB // float32 0 ... 1
 	BatterySoCTargetMin       Identifier = 0xCE266F0F // float32 0 ... 1
 	BatterySoCTargetMinIsland Identifier = 0x8EBF9574 // float32 0 ... 1
-	PowerMngSocStrategy       Identifier = 0xF168B748 // ENUM: SOC target selection
 )
 
 // Table to convert identifier values to human-readable strings
