@@ -1,6 +1,6 @@
 # rct
 
-A library for communication with solar power inverters of the RCT power brand. 
+A library for communication with solar power inverters of the RCT power brand.
 Tested with the RCT PS 6.0 solar power inverter, battery and grid power sensor.
 
 RCT power is a registered trademark of RCT Power GmbH. This library is not provided by, endorsed by, supported by or affiliated with the company in any way. 
@@ -24,20 +24,28 @@ import (
 )
 
 func main() {
-  conn, err:=rct.NewConnection("my-RCT-hostname-or-IP-address", time.Second*2)
-  if err!=nil {
-    fmt.Println(err)
-    return
-  }
-  defer conn.Close()
-  
-  a, err:=rct.QueryFloat32(rct.SolarGenAPowerW)
-  if err!=nil {
-    fmt.Println(err)
-    return
-  }
+	conn, err := rct.NewConnection("my-RCT-hostname-or-IP-address", time.Second*2)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer conn.Close()
 
-  fmt.Printf("%s is %.0fV\n", string(rct.SolarGenAPowerW), a)
+	// read
+	a, err := conn.QueryFloat32(rct.SolarGenAPowerW)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%s is %.0fV\n", string(rct.SolarGenAPowerW), a)
+
+	// write
+	err = conn.SetSocMin(0.07)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 ```
 
