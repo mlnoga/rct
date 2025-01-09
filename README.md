@@ -18,9 +18,9 @@ Use like this:
 package main
 
 import (
-  "rct"
-  "time"
-  "fmt"
+	"fmt"
+	"rct"
+	"time"
 )
 
 func main() {
