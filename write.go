@@ -186,7 +186,7 @@ func (c *Connection) SetSocCharge(charge float32) error {
 
 // SetGridPowerLimit sets the maximum battery-to-grid power (p_rec_lim[1])
 func (c *Connection) SetGridPowerLimit(power uint16) error {
-	if power < 0 || power > 6000 {
+	if power > 6000 {
 		return fmt.Errorf("invalid grid power limit value: %d, valid range is 0 to 6000", power)
 	}
 
