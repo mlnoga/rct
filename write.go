@@ -29,9 +29,6 @@ func (c *Connection) SetSocTarget(target float32) error {
 		return fmt.Errorf("invalid SOC target value: %.2f, valid range is 0.00 to 1.00", target)
 	}
 
-	// Round to 2 decimal places
-	target = float32(math.Round(float64(target)*100) / 100)
-
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(target))
 
