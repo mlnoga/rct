@@ -175,3 +175,11 @@ func (c *Connection) QueryUint8(id Identifier) (val uint8, err error) {
 	}
 	return dg.Uint8()
 }
+
+// Writes the given identifier with the given value on the RCT device
+func (c *Connection) Write(id Identifier, data []byte) error {
+	b := NewDatagramBuilder()
+	b.Build(&Datagram{Write, id, data})
+	_, err := c.Send(b)
+	return err
+}

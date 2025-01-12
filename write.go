@@ -16,15 +16,7 @@ func (c *Connection) SetSocStrategy(strategy uint8) error {
 		return fmt.Errorf("invalid SOC strategy value: %d", strategy)
 	}
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngSocStrategy,
-		Data: []byte{strategy},
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngSocStrategy, []byte{strategy}); err != nil {
 		return fmt.Errorf("failed to set SOC strategy: %w", err)
 	}
 
@@ -43,15 +35,7 @@ func (c *Connection) SetSocTarget(target float32) error {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(target))
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngSocTargetSet,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngSocTargetSet, data); err != nil {
 		return fmt.Errorf("failed to set SOC target: %w", err)
 	}
 
@@ -67,15 +51,7 @@ func (c *Connection) SetBatteryPowerExtern(power float32) error {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(power))
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngBatteryPowerExternW,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngBatteryPowerExternW, data); err != nil {
 		return fmt.Errorf("failed to set battery power extern: %w", err)
 	}
 
@@ -94,15 +70,7 @@ func (c *Connection) SetSocMin(min float32) error {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(min))
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngSocMin,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngSocMin, data); err != nil {
 		return fmt.Errorf("failed to set SOC min: %w", err)
 	}
 
@@ -121,15 +89,7 @@ func (c *Connection) SetSocMax(max float32) error {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(max))
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngSocMax,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngSocMax, data); err != nil {
 		return fmt.Errorf("failed to set SOC max: %w", err)
 	}
 
@@ -142,15 +102,7 @@ func (c *Connection) SetSocChargePower(power uint16) error {
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, power)
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngSocChargePowerW,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngSocChargePowerW, data); err != nil {
 		return fmt.Errorf("failed to set SOC charge power: %w", err)
 	}
 
@@ -169,15 +121,7 @@ func (c *Connection) SetSocCharge(charge float32) error {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(charge))
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngSocCharge,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngSocCharge, data); err != nil {
 		return fmt.Errorf("failed to set SOC charge: %w", err)
 	}
 
@@ -193,15 +137,7 @@ func (c *Connection) SetGridPowerLimit(power uint16) error {
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, power)
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngGridPowerLimitW,
-		Data: data,
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngGridPowerLimitW, data); err != nil {
 		return fmt.Errorf("failed to set grid power limit: %w", err)
 	}
 
@@ -215,15 +151,7 @@ func (c *Connection) SetUseGridPower(enable bool) error {
 		data = 1
 	}
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{
-		Cmd:  Write,
-		Id:   PowerMngUseGridPowerEnable,
-		Data: []byte{data},
-	})
-
-	_, err := c.Send(builder)
-	if err != nil {
+	if err := c.Write(PowerMngUseGridPowerEnable, []byte{data}); err != nil {
 		return fmt.Errorf("failed to set grid power usage: %w", err)
 	}
 
