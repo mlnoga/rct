@@ -213,8 +213,6 @@ func (c *Connection) SetUseGridPower(enable bool) error {
 	var data byte
 	if enable {
 		data = 1
-	} else {
-		data = 0
 	}
 
 	builder := NewDatagramBuilder()
