@@ -56,4 +56,4 @@ func main() {
 * `build.go` defines a datagram builder for assembling datagrams to send
 * `parse.go` defines a datagram parser which parses incoming bytes into datagrams
 * `connection.go` ties builders and parsers into a bidirectional connection with the device, and defines convenience methods to synchronously query identifiers
-
+* `write.go` defines methods to validate and write data
