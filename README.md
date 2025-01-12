@@ -41,8 +41,7 @@ func main() {
 	fmt.Printf("%s is %.0fV\n", string(rct.SolarGenAPowerW), a)
 
 	// write
-	err = conn.SetSocMin(0.07)
-	if err != nil {
+	if err := conn.SetSocMin(0.07); err != nil {
 		fmt.Println(err)
 		return
 	}
