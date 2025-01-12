@@ -67,7 +67,7 @@ func (c *Connection) SetSocMin(min float32) error {
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(min))
 
-	if err := c.Write(PowerMngSocMin, data); err != nil {
+	if err := c.Write(BatterySoCTargetMin, data); err != nil {
 		return fmt.Errorf("failed to set SOC min: %w", err)
 	}
 

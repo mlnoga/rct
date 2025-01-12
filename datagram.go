@@ -95,7 +95,7 @@ const (
 	PowerMngSocStrategy         Identifier = 0xF168B748 // ENUM: SOC target selection
 	PowerMngSocTargetSet        Identifier = 0xD1DFC969 // float32
 	PowerMngBatteryPowerExternW Identifier = 0xBD008E29 // float32
-	PowerMngSocMin              Identifier = 0xCE266F0F // float32
+	BatterySoCTargetMin         Identifier = 0xCE266F0F // float32 0 ... 1
 	PowerMngSocMax              Identifier = 0x97997C93 // float32
 	PowerMngSocChargePowerW     Identifier = 0x1D2994EA // float32
 	PowerMngSocCharge           Identifier = 0xBD3A23C3 // float32
