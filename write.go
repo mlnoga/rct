@@ -74,6 +74,25 @@ func (c *Connection) SetSocMin(min float32) error {
 	return nil
 }
 
+// SetSocMinIsland sets the minimum SOC target (power_mng.soc_min_island) with the given value
+func (c *Connection) SetSocMinIsland(min float32) error {
+	if min < 0.00 || min > 1.00 {
+		return fmt.Errorf("invalid SOC min value: %.2f, valid range is 0.00 to 1.00", min)
+	}
+
+	// Round to 2 decimal places
+	min = float32(math.Round(float64(min)*100) / 100)
+
+	data := make([]byte, 4)
+	binary.BigEndian.PutUint32(data, math.Float32bits(min))
+
+	if err := c.Write(BatterySoCTargetMinIsland, data); err != nil {
+		return fmt.Errorf("failed to set SOC min island: %w", err)
+	}
+
+	return nil
+}
+
 // SetSocMax sets the maximum SOC target (power_mng.soc_max) with the given value
 func (c *Connection) SetSocMax(max float32) error {
 	if max < 0.00 || max > 1.00 {

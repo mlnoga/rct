@@ -96,6 +96,7 @@ const (
 	PowerMngSocTargetSet        Identifier = 0xD1DFC969 // float32
 	PowerMngBatteryPowerExternW Identifier = 0xBD008E29 // float32
 	BatterySoCTargetMin         Identifier = 0xCE266F0F // float32 0 ... 1
+	BatterySoCTargetMinIsland   Identifier = 0x8EBF9574 // float32 0 ... 1
 	PowerMngSocMax              Identifier = 0x97997C93 // float32
 	PowerMngSocChargePowerW     Identifier = 0x1D2994EA // float32
 	PowerMngSocCharge           Identifier = 0xBD3A23C3 // float32
@@ -104,13 +105,11 @@ const (
 
 	// other
 	//
-	InverterState             Identifier = 0x5F33284E // uint8
-	BatteryCapacityAh         Identifier = 0xB57B59BD // float32
-	BatteryTemperatureC       Identifier = 0x902AFAFB // float32
-	BatterySoCTarget          Identifier = 0x8B9FF008 // float32 0 ... 1
-	BatterySoCTargetHigh      Identifier = 0xB84A38AB // float32 0 ... 1
-	BatterySoCTargetMin       Identifier = 0xCE266F0F // float32 0 ... 1
-	BatterySoCTargetMinIsland Identifier = 0x8EBF9574 // float32 0 ... 1
+	InverterState        Identifier = 0x5F33284E // uint8
+	BatteryCapacityAh    Identifier = 0xB57B59BD // float32
+	BatteryTemperatureC  Identifier = 0x902AFAFB // float32
+	BatterySoCTarget     Identifier = 0x8B9FF008 // float32 0 ... 1
+	BatterySoCTargetHigh Identifier = 0xB84A38AB // float32 0 ... 1
 )
 
 // Table to convert identifier values to human-readable strings
