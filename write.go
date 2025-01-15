@@ -41,10 +41,6 @@ func (c *Connection) SetSocTarget(target float32) error {
 
 // SetBatteryPowerExtern sets the external battery power (power_mng.battery_power_extern) with the given float32 value in W
 func (c *Connection) SetBatteryPowerExtern(power float32) error {
-	if power < -6000 || power > 6000 {
-		return fmt.Errorf("invalid battery power value: %.2f, valid range is -6000 to 6000", power)
-	}
-
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(power))
 
@@ -60,9 +56,6 @@ func (c *Connection) SetSocMin(min float32) error {
 	if min < 0.00 || min > 1.00 {
 		return fmt.Errorf("invalid SOC min value: %.2f, valid range is 0.00 to 1.00", min)
 	}
-
-	// Round to 2 decimal places
-	min = float32(math.Round(float64(min)*100) / 100)
 
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(min))
@@ -80,9 +73,6 @@ func (c *Connection) SetSocMinIsland(min float32) error {
 		return fmt.Errorf("invalid SOC min value: %.2f, valid range is 0.00 to 1.00", min)
 	}
 
-	// Round to 2 decimal places
-	min = float32(math.Round(float64(min)*100) / 100)
-
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(min))
 
@@ -98,9 +88,6 @@ func (c *Connection) SetSocMax(max float32) error {
 	if max < 0.00 || max > 1.00 {
 		return fmt.Errorf("invalid SOC max value: %.2f, valid range is 0.00 to 1.00", max)
 	}
-
-	// Round to 2 decimal places
-	max = float32(math.Round(float64(max)*100) / 100)
 
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(max))
@@ -131,9 +118,6 @@ func (c *Connection) SetSocCharge(charge float32) error {
 		return fmt.Errorf("invalid SOC charge value: %.2f, valid range is 0.00 to 1.00", charge)
 	}
 
-	// Round to 2 decimal places
-	charge = float32(math.Round(float64(charge)*100) / 100)
-
 	data := make([]byte, 4)
 	binary.BigEndian.PutUint32(data, math.Float32bits(charge))
 
@@ -146,10 +130,6 @@ func (c *Connection) SetSocCharge(charge float32) error {
 
 // SetGridPowerLimit sets the maximum battery-to-grid power (p_rec_lim[1])
 func (c *Connection) SetGridPowerLimit(power uint16) error {
-	if power > 6000 {
-		return fmt.Errorf("invalid grid power limit value: %d, valid range is 0 to 6000", power)
-	}
-
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, power)
 
