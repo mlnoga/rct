@@ -110,6 +110,7 @@ const (
 	BatteryTemperatureC  Identifier = 0x902AFAFB // float32
 	BatterySoCTarget     Identifier = 0x8B9FF008 // float32 0 ... 1
 	BatterySoCTargetHigh Identifier = 0xB84A38AB // float32 0 ... 1
+	BatteryBatStatus     Identifier = 0x70A2AF4F // int32
 )
 
 // Table to convert identifier values to human-readable strings
