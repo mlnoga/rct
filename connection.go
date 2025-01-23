@@ -158,6 +158,15 @@ func (c *Connection) QueryFloat32(id Identifier) (val float32, err error) {
 	return dg.Float32()
 }
 
+// Queries the given identifier on the RCT device, returning its value as a uint8
+func (c *Connection) QueryInt32(id Identifier) (val int32, err error) {
+	dg, err := c.Query(id)
+	if err != nil {
+		return 0, err
+	}
+	return dg.Int32()
+}
+
 // Queries the given identifier on the RCT device, returning its value as a uint16
 func (c *Connection) QueryUint16(id Identifier) (val uint16, err error) {
 	dg, err := c.Query(id)
