@@ -1,6 +1,6 @@
 # rct
 
-A library for communication with solar power inverters of the RCT power brand. 
+A library for communication with solar power inverters of the RCT power brand.
 Tested with the RCT PS 6.0 solar power inverter, battery and grid power sensor.
 
 RCT power is a registered trademark of RCT Power GmbH. This library is not provided by, endorsed by, supported by or affiliated with the company in any way. 
@@ -18,26 +18,33 @@ Use like this:
 package main
 
 import (
-  "rct"
-  "time"
-  "fmt"
+	"fmt"
+	"rct"
+	"time"
 )
 
 func main() {
-  conn, err:=rct.NewConnection("my-RCT-hostname-or-IP-address", time.Second*2)
-  if err!=nil {
-    fmt.Println(err)
-    return
-  }
-  defer conn.Close()
-  
-  a, err:=rct.QueryFloat32(rct.SolarGenAPowerW)
-  if err!=nil {
-    fmt.Println(err)
-    return
-  }
+	conn, err := rct.NewConnection("my-RCT-hostname-or-IP-address", time.Second*2)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer conn.Close()
 
-  fmt.Printf("%s is %.0fV\n", string(rct.SolarGenAPowerW), a)
+	// read
+	a, err := conn.QueryFloat32(rct.SolarGenAPowerW)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("%s is %.0fV\n", string(rct.SolarGenAPowerW), a)
+
+	// write
+	if err := conn.SetSocMin(0.07); err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 ```
 
@@ -48,4 +55,4 @@ func main() {
 * `build.go` defines a datagram builder for assembling datagrams to send
 * `parse.go` defines a datagram parser which parses incoming bytes into datagrams
 * `connection.go` ties builders and parsers into a bidirectional connection with the device, and defines convenience methods to synchronously query identifiers
-
+* `write.go` defines methods to validate and write data

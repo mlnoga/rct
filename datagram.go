@@ -46,6 +46,16 @@ func (c Command) String() string {
 	return rctCommandToString[0]
 }
 
+// SOC target selection
+const (
+	SOCTargetSOC           uint8 = 0x00
+	SOCTargetConstant      uint8 = 0x01
+	SOCTargetExternal      uint8 = 0x02
+	SOCTargetMiddleVoltage uint8 = 0x03
+	SOCTargetInternal      uint8 = 0x04 // default
+	SOCTargetSchedule      uint8 = 0x05
+)
+
 // Identifier type for variables on the RCT device
 type Identifier uint32
 
@@ -80,15 +90,27 @@ const (
 	TotalEnergyGridFeedInWh Identifier = 0x44D4C533 // float32
 	TotalEnergyGridLoadWh   Identifier = 0x62FBE7DC // float32
 
+	// write
+	//
+	PowerMngSocStrategy         Identifier = 0xF168B748 // ENUM: SOC target selection
+	PowerMngSocTargetSet        Identifier = 0xD1DFC969 // float32
+	PowerMngBatteryPowerExternW Identifier = 0xBD008E29 // float32
+	BatterySoCTargetMin         Identifier = 0xCE266F0F // float32 0 ... 1
+	BatterySoCTargetMinIsland   Identifier = 0x8EBF9574 // float32 0 ... 1
+	PowerMngSocMax              Identifier = 0x97997C93 // float32
+	PowerMngSocChargePowerW     Identifier = 0x1D2994EA // float32
+	PowerMngSocCharge           Identifier = 0xBD3A23C3 // float32
+	PowerMngGridPowerLimitW     Identifier = 0x54829753 // float32
+	PowerMngUseGridPowerEnable  Identifier = 0x36A9E9A6 // bool
+
 	// other
 	//
-	InverterState             Identifier = 0x5F33284E // uint8
-	BatteryCapacityAh         Identifier = 0xB57B59BD // float32
-	BatteryTemperatureC       Identifier = 0x902AFAFB // float32
-	BatterySoCTarget          Identifier = 0x8B9FF008 // float32 0 ... 1
-	BatterySoCTargetHigh      Identifier = 0xB84A38AB // float32 0 ... 1
-	BatterySoCTargetMin       Identifier = 0xCE266F0F // float32 0 ... 1
-	BatterySoCTargetMinIsland Identifier = 0x8EBF9574 // float32 0 ... 1
+	InverterState        Identifier = 0x5F33284E // uint8
+	BatteryCapacityAh    Identifier = 0xB57B59BD // float32
+	BatteryTemperatureC  Identifier = 0x902AFAFB // float32
+	BatterySoCTarget     Identifier = 0x8B9FF008 // float32 0 ... 1
+	BatterySoCTargetHigh Identifier = 0xB84A38AB // float32 0 ... 1
+	BatteryBatStatus     Identifier = 0x70A2AF4F // int32
 )
 
 // Table to convert identifier values to human-readable strings
