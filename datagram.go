@@ -231,6 +231,15 @@ func (d *Datagram) Float32() (val float32, err error) {
 	return math.Float32frombits(binary.BigEndian.Uint32(d.Data)), nil
 }
 
+// Returns datagram body value as an int32
+func (d *Datagram) Int32() (val int32, err error) {
+	if len(d.Data) != 4 {
+		return 0, RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
+	}
+
+	return int32(binary.BigEndian.Uint32(d.Data)), nil
+}
+
 // Returns datagram body value as a uint16
 func (d *Datagram) Uint16() (val uint16, err error) {
 	if len(d.Data) != 2 {

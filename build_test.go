@@ -36,7 +36,7 @@ func TestBuilderParser(t *testing.T) {
 		parser.length = len(builder.Bytes())
 		dg, err := parser.Parse()
 		if err != nil {
-			t.Errorf(err.Error())
+			t.Errorf("%s", err.Error())
 		}
 		if dg.Cmd != tc.Dg.Cmd || dg.Id != tc.Dg.Id || len(dg.Data) != len(tc.Dg.Data) {
 			t.Errorf("error mismatch got %s, expect %s", dg.String(), tc.Dg.String())
