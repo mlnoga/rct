@@ -55,6 +55,11 @@ func (c *Connection) connect() (err error) {
 }
 
 // Closes the RCT device connection
+func (c *Connection) Conn() net.Conn {
+	return c.conn
+}
+
+// Closes the RCT device connection
 func (c *Connection) Close() {
 	c.conn.Close()
 	c.conn = nil
@@ -142,7 +147,7 @@ func (c *Connection) Query(id Identifier) (*Datagram, error) {
 		return nil, err
 	}
 	if dg.Cmd != Response || dg.Id != id {
-		return nil, RecoverableError{fmt.Sprintf("invalid response to read of %08X: %v", id, dg)}
+		return nil, &RecoverableError{fmt.Sprintf("invalid response to read of %08X: %v", id, dg)}
 	}
 	c.cache.Put(dg)
 

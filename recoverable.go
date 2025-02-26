@@ -6,6 +6,6 @@ type RecoverableError struct {
 }
 
 // Prints error to string
-func (e RecoverableError) Error() string {
+func (e *RecoverableError) Error() string {
 	return e.Err
 }
