@@ -14,7 +14,7 @@ var builderTestCases = []builderTestCase{
 
 // Test if builder returns expected byte representation
 func TestBuilder(t *testing.T) {
-	builder := NewDatagramBuilder()
+	builder := new(DatagramBuilder)
 	for _, tc := range builderTestCases {
 		builder.Build(&tc.Dg)
 		res := builder.String()
@@ -26,7 +26,7 @@ func TestBuilder(t *testing.T) {
 
 // Test if roundtrip from builder to parser returns the same datagram
 func TestBuilderParser(t *testing.T) {
-	builder := NewDatagramBuilder()
+	builder := new(DatagramBuilder)
 	parser := NewDatagramParser()
 
 	for _, tc := range builderTestCases {

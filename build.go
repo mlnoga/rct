@@ -8,14 +8,7 @@ import (
 // Builds RCT datagrams into an internal buffer, with escaping and CRC correction
 type DatagramBuilder struct {
 	buffer bytes.Buffer
-	crc    *CRC
-}
-
-// Returns a new DatagramBuilder
-func NewDatagramBuilder() (b *DatagramBuilder) {
-	return &DatagramBuilder{
-		crc: NewCRC(),
-	}
+	crc    CRC
 }
 
 // Resets the internal buffer and CRC
