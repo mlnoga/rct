@@ -95,6 +95,7 @@ func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte,
 
 				c.conn, err = d.DialContext(ctx, "tcp", addr)
 				if err != nil {
+					errC <- err
 					return 0, err
 				}
 			}
@@ -102,13 +103,8 @@ func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte,
 			c.mu.Unlock()
 
 			return conn.Read(buf)
-		})
+		}, backoff.WithMaxElapsedTime(time.Minute))
 		if err != nil {
-			c.mu.Lock()
-			c.conn = nil
-			c.mu.Unlock()
-
-			errC <- err
 			continue
 		}
 
