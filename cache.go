@@ -22,7 +22,7 @@ func NewCache() *Cache {
 	return &Cache{data: make(map[Identifier]entry)}
 }
 
-// Returns cache entry for the given identifier, if still valid under timeout
+// Returns cache entry for the given identifier
 func (c *Cache) Get(id Identifier) (*Datagram, time.Time) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()

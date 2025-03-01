@@ -90,7 +90,9 @@ func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte,
 			if c.conn == nil {
 				var d net.Dialer
 
-				ctx, _ := context.WithTimeout(ctx, DialTimeout)
+				ctx, cancel := context.WithTimeout(ctx, DialTimeout)
+				defer cancel()
+
 				c.conn, err = d.DialContext(ctx, "tcp", addr)
 				if err != nil {
 					return 0, err
