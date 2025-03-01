@@ -156,8 +156,8 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 	return dg, nil
 }
 
-// ParseAsync asynchronously parses a stream of bytes into datagrams
-func ParseAsync(ctx context.Context, buf <-chan byte, dgC chan<- Datagram) {
+// ParseStream parses a stream of bytes into a stream of datagrams
+func ParseStream(ctx context.Context, buf <-chan byte, dgC chan<- Datagram) {
 	var (
 		b           byte
 		length      uint16

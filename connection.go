@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
+	"github.com/mlnoga/rct/internal"
 )
 
 // DialTimeout is the default cache for connecting to a RCT device
@@ -17,8 +18,8 @@ var DialTimeout = time.Second * 5
 type Connection struct {
 	mu      sync.Mutex
 	conn    net.Conn
-	cache   *Cache
-	broker  *Broker[Datagram]
+	cache   *cache
+	broker  *internal.Broker[Datagram]
 	errCB   func(error)
 	timeout time.Duration
 }
@@ -41,8 +42,8 @@ func WithTimeout(timeout time.Duration) func(*Connection) {
 // Must not be called concurrently.
 func NewConnection(ctx context.Context, host string, opt ...func(*Connection)) (*Connection, error) {
 	conn := &Connection{
-		cache:  NewCache(),
-		broker: NewBroker[Datagram](),
+		cache:  newCache(),
+		broker: internal.NewBroker[Datagram](),
 	}
 
 	for _, o := range opt {
@@ -72,7 +73,7 @@ func NewConnection(ctx context.Context, host string, opt ...func(*Connection)) (
 	}()
 
 	go conn.broker.Start(ctx)
-	go ParseAsync(ctx, bufC, conn.broker.publishCh)
+	go ParseStream(ctx, bufC, conn.broker.PublishChan())
 	go conn.handle(ctx, conn.broker.Subscribe(), errC)
 
 	return conn, nil

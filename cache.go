@@ -12,18 +12,18 @@ type entry struct {
 }
 
 // A datagram cache
-type Cache struct {
+type cache struct {
 	mu   sync.RWMutex
 	data map[Identifier]entry
 }
 
 // Creates a new datagram cache
-func NewCache() *Cache {
-	return &Cache{data: make(map[Identifier]entry)}
+func newCache() *cache {
+	return &cache{data: make(map[Identifier]entry)}
 }
 
-// Returns cache entry for the given identifier
-func (c *Cache) Get(id Identifier) (*Datagram, time.Time) {
+// Returns datagram and timestamp for the given identifier
+func (c *cache) Get(id Identifier) (*Datagram, time.Time) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	entry := c.data[id]
@@ -31,7 +31,7 @@ func (c *Cache) Get(id Identifier) (*Datagram, time.Time) {
 }
 
 // Puts given datagram into the cache, for the identifier contained in the datagram
-func (c *Cache) Put(dg *Datagram) {
+func (c *cache) Put(dg *Datagram) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.data[dg.Id] = entry{dg, time.Now()}

@@ -1,4 +1,4 @@
-package rct
+package internal
 
 import "context"
 
@@ -51,6 +51,6 @@ func (b *Broker[T]) Unsubscribe(msgCh chan T) {
 	b.unsubCh <- msgCh
 }
 
-func (b *Broker[T]) Publish(msg T) {
-	b.publishCh <- msg
+func (b *Broker[T]) PublishChan() chan<- T {
+	return b.publishCh
 }
