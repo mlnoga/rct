@@ -96,10 +96,9 @@ func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte,
 					return 0, err
 				}
 			}
-			conn := c.conn
 			c.mu.Unlock()
 
-			return conn.Read(buf)
+			return c.conn.Read(buf)
 		})
 		if err != nil {
 			c.mu.Lock()
