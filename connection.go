@@ -96,9 +96,10 @@ func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte,
 					return 0, err
 				}
 			}
+			conn := c.conn
 			c.mu.Unlock()
 
-			return c.conn.Read(buf)
+			return conn.Read(buf)
 		})
 		if err != nil {
 			c.mu.Lock()
@@ -137,10 +138,7 @@ func (c *Connection) handle(ctx context.Context, dgC <-chan Datagram, errC chan<
 func (c *Connection) Send(rdb *DatagramBuilder) (int, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	return c.send(rdb)
-}
 
-func (c *Connection) send(rdb *DatagramBuilder) (int, error) {
 	// ensure active connection
 	if c.conn == nil {
 		return 0, errors.New("disconnected")
