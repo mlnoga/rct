@@ -1,6 +1,7 @@
 package rct
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -12,6 +13,7 @@ const (
 	AwaitingStart ParserState = iota
 	AwaitingCmd
 	AwaitingLen
+	AwaitingLen2
 	AwaitingId0
 	AwaitingId1
 	AwaitingId2
@@ -20,10 +22,10 @@ const (
 	AwaitingCrc0
 	AwaitingCrc1
 	Done
-	CRCError
 )
 
 // A parser for RCT datagrams
+// DEPRECATED: use ParseAsync instead
 type DatagramParser struct {
 	buffer []byte
 	length int
@@ -154,23 +156,29 @@ func (p *DatagramParser) Parse() (dg *Datagram, err error) {
 	return dg, nil
 }
 
-// Parses a given transmission into a datagram
-func Parse(buf []byte) (*Datagram, int, error) {
+// ParseAsync asynchronously parses a stream of bytes into datagrams
+func ParseAsync(ctx context.Context, buf <-chan byte, dgC chan<- Datagram) {
 	var (
-		n           int
-		length      uint8
-		dataLength  uint8
+		b           byte
+		length      uint16
+		dataLength  uint16
 		crc         CRC
 		crcReceived uint16
-		escaped     bool
+		escaped, ok bool
 		state       ParserState
 		dg          Datagram
 	)
 
-LOOP:
 	// fmt.Printf("Parser ")
-	for i, b := range buf {
-		n = i
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case b, ok = <-buf:
+			if !ok {
+				return
+			}
+		}
 		// fmt.Printf("(%v)-%02x->", state, b)
 
 		if !escaped {
@@ -204,7 +212,19 @@ LOOP:
 
 		case AwaitingLen:
 			crc.Update(b)
-			length = uint8(b)
+			length = uint16(b)
+			if dg.Cmd == LongResponse || dg.Cmd == LongWrite {
+				// fmt.Printf("-- long: % 0x\n", buf[i:i+8])
+				state = AwaitingLen2
+				continue
+			}
+			dataLength = length - 4
+			state = AwaitingId0
+
+		case AwaitingLen2:
+			crc.Update(b)
+			length = length<<8 + uint16(b)
+			// fmt.Printf("-- long: %d\n", length)
 			dataLength = length - 4
 			state = AwaitingId0
 
@@ -250,25 +270,13 @@ LOOP:
 			crcCalculated := crc.Get()
 			if crcCalculated != crcReceived {
 				// fmt.Printf("[CRC error calc %04x want %04x]", crcCalculated, crcReceived)
-				state = CRCError // CRCError
-				break LOOP
+				state = AwaitingCmd // CRCError
+				continue
 			}
 
-			state = Done
-			fallthrough
-
-		case Done:
-			// fmt.Println("state", state)
-			break LOOP
+			// Done
+			state = AwaitingStart
+			dgC <- dg
 		}
-
-		// fmt.Println("state", state)
 	}
-	// fmt.Printf("(%v)\n", state)
-
-	if state != Done {
-		return nil, n, &RecoverableError{fmt.Sprintf("parsing failed in state %d", state)}
-	}
-
-	return &dg, n, nil
 }

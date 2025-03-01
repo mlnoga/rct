@@ -1,39 +1,38 @@
 package rct
 
 import (
+	"sync"
 	"time"
 )
 
 // An entry in a datagram cache (pair of datagram and timestamp)
-type cacheEntry struct {
+type entry struct {
 	dg *Datagram
 	ts time.Time
 }
 
 // A datagram cache
 type Cache struct {
-	entries map[Identifier]cacheEntry
-	timeout time.Duration
+	mu   sync.RWMutex
+	data map[Identifier]entry
 }
 
 // Creates a new datagram cache
-func NewCache(timeout time.Duration) (cache *Cache) {
-	return &Cache{
-		make(map[Identifier]cacheEntry),
-		timeout,
-	}
+func NewCache() *Cache {
+	return &Cache{data: make(map[Identifier]entry)}
 }
 
 // Returns cache entry for the given identifier, if still valid under timeout
-func (c *Cache) Get(i Identifier) (dg *Datagram, ok bool) {
-	entry, ok := c.entries[i]
-	if !ok || c.timeout < time.Since(entry.ts) {
-		return &Datagram{}, false
-	}
-	return entry.dg, true
+func (c *Cache) Get(id Identifier) (*Datagram, time.Time) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	entry := c.data[id]
+	return entry.dg, entry.ts
 }
 
 // Puts given datagram into the cache, for the identifier contained in the datagram
 func (c *Cache) Put(dg *Datagram) {
-	c.entries[dg.Id] = cacheEntry{dg, time.Now()}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.data[dg.Id] = entry{dg, time.Now()}
 }

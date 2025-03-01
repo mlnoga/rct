@@ -1,69 +1,137 @@
 package rct
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/cenkalti/backoff/v5"
 )
 
-var (
-	// DialTimeout is the default cache for connecting to a RCT device
-	DialTimeout = time.Second * 5
-
-	// Map of active connections
-	connectionCache = make(map[string]*Connection)
-)
+// DialTimeout is the default cache for connecting to a RCT device
+var DialTimeout = time.Second * 5
 
 // Connection to a RCT device
 type Connection struct {
-	mu     sync.Mutex
-	host   string
-	conn   net.Conn
-	parser *DatagramParser
-	cache  *Cache
+	mu      sync.Mutex
+	conn    net.Conn
+	cache   *Cache
+	broker  *Broker[Datagram]
+	errCB   func(error)
+	timeout time.Duration
+}
+
+// WithErrorCallback sets the error callback. It is only invoked after initial connection succeeds.
+func WithErrorCallback(cb func(error)) func(*Connection) {
+	return func(c *Connection) {
+		c.errCB = cb
+	}
+}
+
+// WithTimeout sets the query timeout
+func WithTimeout(timeout time.Duration) func(*Connection) {
+	return func(c *Connection) {
+		c.timeout = timeout
+	}
 }
 
 // Creates a new connection to a RCT device at the given address.
 // Must not be called concurrently.
-func NewConnection(host string, cache time.Duration) (*Connection, error) {
-	if conn, ok := connectionCache[host]; ok {
-		if conn.conn != nil { // there might be dead connection in the cache, e.g. when connection was disconnected
-			return conn, nil
+func NewConnection(ctx context.Context, host string, opt ...func(*Connection)) (*Connection, error) {
+	conn := &Connection{
+		cache:  NewCache(),
+		broker: NewBroker[Datagram](),
+	}
+
+	for _, o := range opt {
+		o(conn)
+	}
+
+	bufC := make(chan byte, 1024)
+	errC := make(chan error, 1)
+
+	go conn.receive(ctx, net.JoinHostPort(host, "8899"), bufC, errC)
+
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case err := <-errC:
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	conn := &Connection{
-		host:   host,
-		parser: NewDatagramParser(),
-		cache:  NewCache(cache),
-	}
+	go func() {
+		for err := range errC {
+			if conn.errCB != nil {
+				conn.errCB(err)
+			}
+		}
+	}()
 
-	if err := conn.connect(); err != nil {
-		return nil, err
-	}
+	go conn.broker.Start(ctx)
+	go ParseAsync(ctx, bufC, conn.broker.publishCh)
+	go conn.handle(ctx, conn.broker.Subscribe(), errC)
 
-	connectionCache[host] = conn
 	return conn, nil
 }
 
-// Connects an uninitialized RCT connection to the device at the given address
-func (c *Connection) connect() (err error) {
-	address := net.JoinHostPort(c.host, "8899") // default port for RCT
-	c.conn, err = net.DialTimeout("tcp", address, DialTimeout)
-	return err
+// receive streams received bytes from the connection
+func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte, errC chan<- error) {
+	buf := make([]byte, 1024)
+
+	for {
+		n, err := backoff.Retry(ctx, func() (int, error) {
+			var err error
+
+			c.mu.Lock()
+			if c.conn == nil {
+				var d net.Dialer
+
+				ctx, _ := context.WithTimeout(ctx, DialTimeout)
+				c.conn, err = d.DialContext(ctx, "tcp", addr)
+				if err != nil {
+					return 0, err
+				}
+			}
+			conn := c.conn
+			c.mu.Unlock()
+
+			return conn.Read(buf)
+		})
+		if err != nil {
+			c.mu.Lock()
+			c.conn = nil
+			c.mu.Unlock()
+
+			errC <- err
+			continue
+		}
+
+		// ack data received
+		errC <- nil
+
+		// stream received data
+		for _, b := range buf[:n] {
+			bufC <- b
+		}
+	}
 }
 
-// Closes the RCT device connection
-func (c *Connection) Conn() net.Conn {
-	return c.conn
-}
-
-// Closes the RCT device connection
-func (c *Connection) Close() {
-	c.conn.Close()
-	c.conn = nil
-	delete(connectionCache, c.host) // connection is dead, no need to cache any more
+// run is the receiver go routine
+func (c *Connection) handle(ctx context.Context, dgC <-chan Datagram, errC chan<- error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case dg := <-dgC:
+			if dg.Cmd == Response || dg.Cmd == LongResponse {
+				c.cache.Put(&dg)
+			}
+		}
+	}
 }
 
 // Sends the given RCT datagram via the connection
@@ -76,86 +144,65 @@ func (c *Connection) Send(rdb *DatagramBuilder) (int, error) {
 func (c *Connection) send(rdb *DatagramBuilder) (int, error) {
 	// ensure active connection
 	if c.conn == nil {
-		if err := c.connect(); err != nil {
-			return 0, err
-		}
+		return 0, errors.New("disconnected")
 	}
 
-	// fmt.Printf("Sending %v\n", c.Builder.String())
 	n, err := c.conn.Write(rdb.Bytes())
-	// single retry on error when sending
 	if err != nil {
-		// fmt.Printf("Read %d bytes error %v\n", n, err)
 		c.conn.Close()
-		// fmt.Printf("Error reconnecting: %v\n", err)
-		if err := c.connect(); err != nil {
-			return 0, err
-		}
-		n, err = c.conn.Write(rdb.Bytes())
-		// fmt.Printf("Read %d bytes error %v\n", n, err)
+		c.conn = nil
 	}
 	return n, err
 }
 
-// Receives an RCT response via the connection
-func (c *Connection) Receive() (*Datagram, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	return c.receive()
+func (c *Connection) Subscribe() chan Datagram {
+	return c.broker.Subscribe()
 }
 
-// Receives an RCT response via the connection
-func (c *Connection) receive() (dg *Datagram, err error) {
-	// ensure active connection
-	if c.conn == nil {
-		if err := c.connect(); err != nil {
-			return nil, err
-		}
-	}
+func (c *Connection) Unsubscribe(ch chan Datagram) {
+	c.broker.Unsubscribe(ch)
+}
 
-	c.parser.Reset()
-	c.parser.length, err = c.conn.Read(c.parser.buffer)
-	if err != nil {
-		return dg, err
-	}
-	// fmt.Printf("Received %d bytes: %v\n", c.Parser.Len, c.Parser.Buffer[:c.Parser.Len])
-
-	return c.parser.Parse()
-
-	// dg, err=c.Parser.Parse()
-	// fmt.Printf("Received datagram %s error %v\n", dg.String(), err)
-	// return dg, err
+func (c *Connection) Get(id Identifier) (*Datagram, time.Time) {
+	return c.cache.Get(id)
 }
 
 // Queries the given identifier on the RCT device, returning its value as a datagram
 func (c *Connection) Query(id Identifier) (*Datagram, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if dg, ok := c.cache.Get(id); ok {
+	if dg, ts := c.cache.Get(id); dg != nil && time.Since(ts) < c.timeout {
 		return dg, nil
 	}
 
-	builder := NewDatagramBuilder()
-	builder.Build(&Datagram{Read, id, nil})
-	if _, err := c.send(builder); err != nil {
+	resC := make(chan Datagram, 1)
+	data := c.broker.Subscribe()
+	go func() {
+		for dg := range data {
+			if dg.Id == id {
+				select {
+				case resC <- dg:
+				default:
+				}
+			}
+		}
+	}()
+	defer c.broker.Unsubscribe(data)
+
+	var rdb DatagramBuilder
+	rdb.Build(&Datagram{Read, id, nil})
+	if _, err := c.Send(&rdb); err != nil {
 		return nil, err
 	}
 
-	dg, err := c.receive()
-	if err != nil {
-		return nil, err
+	select {
+	case <-time.After(c.timeout):
+		return nil, errors.New("timeout")
+	case dg := <-resC:
+		return &dg, nil
 	}
-	if dg.Cmd != Response || dg.Id != id {
-		return nil, &RecoverableError{fmt.Sprintf("invalid response to read of %08X: %v", id, dg)}
-	}
-	c.cache.Put(dg)
-
-	return dg, nil
 }
 
 // Queries the given identifier on the RCT device, returning its value as a float32
-func (c *Connection) QueryFloat32(id Identifier) (val float32, err error) {
+func (c *Connection) QueryFloat32(id Identifier) (float32, error) {
 	dg, err := c.Query(id)
 	if err != nil {
 		return 0, err
@@ -164,7 +211,7 @@ func (c *Connection) QueryFloat32(id Identifier) (val float32, err error) {
 }
 
 // Queries the given identifier on the RCT device, returning its value as a uint8
-func (c *Connection) QueryInt32(id Identifier) (val int32, err error) {
+func (c *Connection) QueryInt32(id Identifier) (int32, error) {
 	dg, err := c.Query(id)
 	if err != nil {
 		return 0, err
@@ -173,7 +220,7 @@ func (c *Connection) QueryInt32(id Identifier) (val int32, err error) {
 }
 
 // Queries the given identifier on the RCT device, returning its value as a uint16
-func (c *Connection) QueryUint16(id Identifier) (val uint16, err error) {
+func (c *Connection) QueryUint16(id Identifier) (uint16, error) {
 	dg, err := c.Query(id)
 	if err != nil {
 		return 0, err
@@ -182,7 +229,7 @@ func (c *Connection) QueryUint16(id Identifier) (val uint16, err error) {
 }
 
 // Queries the given identifier on the RCT device, returning its value as a uint8
-func (c *Connection) QueryUint8(id Identifier) (val uint8, err error) {
+func (c *Connection) QueryUint8(id Identifier) (uint8, error) {
 	dg, err := c.Query(id)
 	if err != nil {
 		return 0, err
@@ -192,8 +239,8 @@ func (c *Connection) QueryUint8(id Identifier) (val uint8, err error) {
 
 // Writes the given identifier with the given value on the RCT device
 func (c *Connection) Write(id Identifier, data []byte) error {
-	b := NewDatagramBuilder()
-	b.Build(&Datagram{Write, id, data})
-	_, err := c.Send(b)
+	var rdb DatagramBuilder
+	rdb.Build(&Datagram{Write, id, data})
+	_, err := c.Send(&rdb)
 	return err
 }
