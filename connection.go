@@ -22,6 +22,7 @@ type Connection struct {
 	broker  *internal.Broker[Datagram]
 	errCB   func(error)
 	timeout time.Duration
+	logger  func(format string, a ...any)
 }
 
 // WithErrorCallback sets the error callback. It is only invoked after initial connection succeeds.
@@ -35,6 +36,13 @@ func WithErrorCallback(cb func(error)) func(*Connection) {
 func WithTimeout(timeout time.Duration) func(*Connection) {
 	return func(c *Connection) {
 		c.timeout = timeout
+	}
+}
+
+// WithLogger sets the query timeout
+func WithLogger(logger func(format string, a ...any)) func(*Connection) {
+	return func(c *Connection) {
+		c.logger = logger
 	}
 }
 
@@ -75,6 +83,10 @@ func NewConnection(ctx context.Context, host string, opt ...func(*Connection)) (
 	go conn.broker.Start(ctx)
 	go ParseStream(ctx, bufC, conn.broker.PublishChan())
 	go conn.handle(ctx, conn.broker.Subscribe(), errC)
+
+	if conn.logger != nil {
+		go conn.log(ctx, conn.broker.Subscribe())
+	}
 
 	return conn, nil
 }
@@ -119,7 +131,7 @@ func (c *Connection) receive(ctx context.Context, addr string, bufC chan<- byte,
 	}
 }
 
-// run is the receiver go routine
+// handle is the receiver go routine
 func (c *Connection) handle(ctx context.Context, dgC <-chan Datagram, errC chan<- error) {
 	for {
 		select {
@@ -129,6 +141,18 @@ func (c *Connection) handle(ctx context.Context, dgC <-chan Datagram, errC chan<
 			if dg.Cmd == Response || dg.Cmd == LongResponse {
 				c.cache.Put(&dg)
 			}
+		}
+	}
+}
+
+// log is the logger go routine
+func (c *Connection) log(ctx context.Context, dgC <-chan Datagram) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case dg := <-dgC:
+			c.logger("recv: " + dg.String())
 		}
 	}
 }
