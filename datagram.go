@@ -219,13 +219,19 @@ type Datagram struct {
 
 // Prints a RCT datagram in a human-readable representation
 func (d *Datagram) String() string {
-	return fmt.Sprintf("Cmd %s (%02X) Id %s (%08X) Data %v", d.Cmd.String(), uint8(d.Cmd), d.Id.String(), uint32(d.Id), d.Data)
+	l := min(32, len(d.Data))
+	data := fmt.Sprintf("% x", d.Data[:l])
+	if l < len(d.Data) {
+		data += fmt.Sprintf(" ... (%d)", len(d.Data))
+	}
+
+	return fmt.Sprintf("(%02X) %s (%08X) %s [%s]", uint8(d.Cmd), d.Cmd.String(), uint32(d.Id), d.Id.String(), data)
 }
 
 // Returns datagram body value as a float32
 func (d *Datagram) Float32() (val float32, err error) {
 	if len(d.Data) != 4 {
-		return 0, RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
+		return 0, &RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
 	}
 
 	return math.Float32frombits(binary.BigEndian.Uint32(d.Data)), nil
@@ -234,7 +240,7 @@ func (d *Datagram) Float32() (val float32, err error) {
 // Returns datagram body value as an int32
 func (d *Datagram) Int32() (val int32, err error) {
 	if len(d.Data) != 4 {
-		return 0, RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
+		return 0, &RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
 	}
 
 	return int32(binary.BigEndian.Uint32(d.Data)), nil
@@ -243,7 +249,7 @@ func (d *Datagram) Int32() (val int32, err error) {
 // Returns datagram body value as a uint16
 func (d *Datagram) Uint16() (val uint16, err error) {
 	if len(d.Data) != 2 {
-		return 0, RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
+		return 0, &RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
 	}
 
 	return binary.BigEndian.Uint16(d.Data), nil
@@ -252,7 +258,7 @@ func (d *Datagram) Uint16() (val uint16, err error) {
 // Returns datagram body value as a uint8
 func (d *Datagram) Uint8() (val uint8, err error) {
 	if len(d.Data) != 1 {
-		return 0, RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
+		return 0, &RecoverableError{fmt.Sprintf("invalid data length %d", len(d.Data))}
 	}
 
 	return uint8(d.Data[0]), nil
